@@ -94,7 +94,7 @@ const displayMovements = function (movements, sort = false) {
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
-        <div class="movements__value">${mov}€</div>
+        <div class="movements__value">${mov.toFixed(2)}€</div>
       </div>
     `;
 
@@ -104,19 +104,19 @@ const displayMovements = function (movements, sort = false) {
 
 const calcDisplayBalance = function (acc) {
   acc.balance = acc.movements.reduce((acc, mov) => acc + mov, 0);
-  labelBalance.textContent = `${acc.balance}€`;
+  labelBalance.textContent = `${acc.balance.toFixed(2)}€`;
 };
 
 const calcDisplaySummary = function (acc) {
   const incomes = acc.movements
     .filter(mov => mov > 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumIn.textContent = `${incomes}€`;
+  labelSumIn.textContent = `${incomes.toFixed(2)}€`;
 
   const out = acc.movements
     .filter(mov => mov < 0)
     .reduce((acc, mov) => acc + mov, 0);
-  labelSumOut.textContent = `${Math.abs(out)}€`;
+  labelSumOut.textContent = `${Math.abs(out).toFixed(2)}€`;
 
   const interest = acc.movements
     .filter(mov => mov > 0)
@@ -126,7 +126,7 @@ const calcDisplaySummary = function (acc) {
       return int >= 1;
     })
     .reduce((acc, int) => acc + int, 0);
-  labelSumInterest.textContent = `${interest}€`;
+  labelSumInterest.textContent = `${interest.toFixed(2)}€`;
 };
 
 const createUsernames = function (accs) {
@@ -206,7 +206,7 @@ btnTransfer.addEventListener('click', function (e) {
 btnLoan.addEventListener('click', function (e) {
   e.preventDefault();
 
-  const amount = +inputLoanAmount.value;
+  const amount = Math.floor(inputLoanAmount.value); // floor method does type coercion itself.
 
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     // Add movement
@@ -252,18 +252,84 @@ btnSort.addEventListener('click', function (e) {
 /////////////////////////////////////////////////
 // LECTURES
 
+// Numberic Separator:
+
+const a = 1_42_000; // '_' is used as separator to understand 1 lakh and 42 thousand.
+console.log(a);
+
+const b = 1.5_00;
+console.log(b);
+
+// const c = 1._523; // will gove a syntax error
+// const c = _1.523; // will gove a syntax error
+
+console.log(Number('245_26')); // NaN --> Does not work when converting string to number
+console.log(parseFloat('245_265')); // 245 --> Will transfer upto digits before '_'
+console.log(parseInt('245_265')); // 245 --> Will transfer upto digits before '_'
+console.log(parseInt('245_265')); // 245 --> Will transfer upto digits before '_'
+
+/*
+// Math methods and Rounding:
+
+console.log(Math.sqrt(25)); // 5
+console.log(25 ** (1 / 2)); // Also gives same result
+console.log(8 ** (1 / 3)); // 2
+
+console.log(Math.max(25, 12, 17, 89, 8, 16, 54)); // 89
+console.log(Math.max(25, '12', 17, '89', 8, 16, 54)); // 89
+console.log(Math.max(25, '12', 17, '89px', 8, 16, 54)); // NaN
+
+console.log(Math.min(25, '12', 17, '89', '8', 16, 54)); // 8 --> Same as max
+
+console.log(Math.PI); // 3.141592653589793
+console.log(Math.PI * Number.parseFloat(10) ** 2); // 314.1592653589793
+console.log(Math.PI * Number.parseFloat('10px') ** 2); // 314.1592653589793
+
+console.log(Math.trunc(25.26265)); // 25
+console.log(Math.trunc(Math.random() * 10) + 1); // generates a random number between 1 and 10
+// random() returns a number between 0(inclusive) and 1(exclusive)
+
+const randomNumGenerator = function (min, max) {
+  return Math.trunc(Math.random() * (max - min + 1)) + 1; // max-min+1 is done to include max as well
+  // only using max-min does not include max.
+};
+
+console.log(randomNumGenerator(1, 6)); // Random no. between 1 & 6, both inclusive
+console.log(randomNumGenerator(1, 20)); // // Random no. between 1 & 20, both inclusive
+
+console.log(Math.round(23.3)); // 23
+console.log(Math.round(23.9)); // 24
+
+console.log(Math.ceil(24.3)); // 25
+console.log(Math.ceil(24.9)); // 25
+
+console.log(Math.floor(24.3)); // 24
+console.log(Math.floor('24.9')); // 24
+
+console.log(Math.trunc(23.8)); // 24
+console.log(Math.trunc(-23.8)); // -23
+console.log(Math.floor(-23.8)); // -24
+
+// Rounding Decimals:
+
+console.log((2.73262).toFixed(0)); // 3
+console.log((2.73262).toFixed(2)); // 2.73
+console.log(typeof (2.73262).toFixed(3)); // string --> toFixed always returns string
+console.log(typeof +(2.73262).toFixed(3)); // number
+
+/*
 console.log(23 === 23.0);
 console.log(0.1 + 0.2);
 console.log(0.3 === 0.1 + 0.2);
 
 // Conversion:
-console.log(Number(23));
-console.log('23');
-console.log(+'23');
-console.log(+'23X');
+console.log(Number(23)); // 23
+console.log('23'); // 23
+console.log(+'23'); // 23
+console.log(+'23X'); // NaN
 
 //Parsing:
-console.log(Number.parseInt('30px')); // 23 --> automatically extracts 23 from string
+console.log(Number.parseInt('30px')); // 30 --> automatically extracts 30 from string
 console.log(Number.parseInt('px35sda')); // NaN --> Number should be first
 console.log(Number.parseInt('   50rem    ')); // NaN --> Even if spaces are present, they will be ignored
 
@@ -289,3 +355,4 @@ console.log(Number.isInteger(75)); // true
 console.log(Number.isInteger('75')); // false
 console.log(Number.isInteger(75.0)); // true --> as it is still a integer
 console.log(Number.isInteger(75 / 0)); // false
+*/
