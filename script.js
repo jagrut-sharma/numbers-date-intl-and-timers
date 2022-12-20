@@ -81,19 +81,28 @@ const inputClosePin = document.querySelector('.form__input--pin');
 /////////////////////////////////////////////////
 // Functions
 
-const displayMovements = function (movements, sort = false) {
+const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
 
-  const movs = sort ? movements.slice().sort((a, b) => a - b) : movements;
+  const movs = sort
+    ? acc.movements.slice().sort((a, b) => a - b)
+    : acc.movements;
 
   movs.forEach(function (mov, i) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
+
+    const date = new Date(acc.movementsDates[i]);
+    const year = date.getFullYear();
+    const month = `${date.getMonth() + 1}`.padStart(2, 0);
+    const dateMov = `${date.getDate()}`.padStart(2, 0);
+    const displayDate = `${dateMov}/${month}/${year}`;
 
     const html = `
       <div class="movements__row">
         <div class="movements__type movements__type--${type}">${
       i + 1
     } ${type}</div>
+        <div class="movements__date">${displayDate}</div>
         <div class="movements__value">${mov.toFixed(2)}€</div>
       </div>
     `;
@@ -142,7 +151,7 @@ createUsernames(accounts);
 
 const updateUI = function (acc) {
   // Display movements
-  displayMovements(acc.movements);
+  displayMovements(acc);
 
   // Display balance
   calcDisplayBalance(acc);
@@ -154,6 +163,11 @@ const updateUI = function (acc) {
 ///////////////////////////////////////
 // Event handlers
 let currentAccount;
+
+// Fake Login
+currentAccount = account1;
+containerApp.style.opacity = 100;
+updateUI(account1);
 
 btnLogin.addEventListener('click', function (e) {
   // Prevent form from submitting
@@ -174,6 +188,16 @@ btnLogin.addEventListener('click', function (e) {
     // Clear input fields
     inputLoginUsername.value = inputLoginPin.value = '';
     inputLoginPin.blur();
+
+    // Date
+
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = `${now.getMonth() + 1}`.padStart(2, 0);
+    const date = `${now.getDate()}`.padStart(2, 0);
+    const hour = `${now.getHours()}`.padStart(2, 0);
+    const min = `${now.getMinutes()}`.padStart(2, 0);
+    labelDate.textContent = `${date}/${month}/${year}, ${hour}:${min}`;
 
     // Update UI
     updateUI(currentAccount);
@@ -198,6 +222,10 @@ btnTransfer.addEventListener('click', function (e) {
     currentAccount.movements.push(-amount);
     receiverAcc.movements.push(amount);
 
+    // Adding dates
+    currentAccount.movementsDates.push(new Date().toISOString());
+    receiverAcc.movementsDates.push(new Date().toISOString());
+
     // Update UI
     updateUI(currentAccount);
   }
@@ -211,6 +239,9 @@ btnLoan.addEventListener('click', function (e) {
   if (amount > 0 && currentAccount.movements.some(mov => mov >= amount * 0.1)) {
     // Add movement
     currentAccount.movements.push(amount);
+
+    // Add Date
+    currentAccount.movementsDates.push(new Date().toISOString());
 
     // Update UI
     updateUI(currentAccount);
@@ -244,7 +275,7 @@ btnClose.addEventListener('click', function (e) {
 let sorted = false;
 btnSort.addEventListener('click', function (e) {
   e.preventDefault();
-  displayMovements(currentAccount.movements, !sorted);
+  displayMovements(currentAccount, !sorted);
   sorted = !sorted;
 });
 
@@ -252,6 +283,86 @@ btnSort.addEventListener('click', function (e) {
 /////////////////////////////////////////////////
 // LECTURES
 
+/*
+// DATE AND TIME:
+
+const now = new Date();
+console.log(now); // Will print current date e.g.: Tue Dec 20 2022 20:32:21 GMT+0530 (India Standard Time)
+// Willtake a string to give date output --> Automatically detects output
+console.log(new Date('Dec 20 2022 20:31:41')); // Tue Dec 20 2022 20:31:41 GMT+0530 (India Standard Time)
+console.log(new Date('Dec 25 2022'));
+console.log(new Date(account1.movementsDates[0]));
+
+// by using parameters
+console.log(new Date(2022, 6, 13, 12, 54, 23));
+console.log(new Date(2022, 3, 31)); // Was supposed to be Apr 31 but since it doesn't exist, automatically switches to 1 May.
+
+// In milliseconds
+console.log(new Date(0)); // 0 is in milliseconds --> Thu Jan 01 1970 05:30:00 GMT+0530 (India Standard Time)
+console.log(new Date(2000)); // 2000ms = 2s, --> Thu Jan 01 1970 05:30:02 GMT+0530 (India Standard Time) --> See time is increased by 2s
+console.log(new Date(3 * 24 * 60 * 60 * 1000)); // 3 days after unix time
+
+// Working with Dates
+console.log('------------------------------------------');
+const future = new Date(2037, 4, 13, 16, 15, 12);
+console.log(future);
+console.log(future.getFullYear());
+console.log(future.getMonth());
+console.log(future.getDate());
+console.log(future.getDay());
+console.log(future.getHours());
+console.log(future.getMinutes());
+console.log(future.getSeconds());
+console.log(future.toISOString()); // Converts to ISO string --> this string can be passed as parameter to convert to date.
+console.log(future.getTime()); // Gives timestamp for a date --> milliseconds passed since 1st Jan, 1970 --> 2125824312000
+console.log(new Date(2125824312000)); // --> Gives same date
+console.log(Date.now()); // Timestamp for current time
+
+future.setFullYear(2040);
+console.log(future); // set Year to 2040 --> Similarly other methods exist
+
+/*
+// BigINT:
+
+console.log(2 ** 53 - 1); // Biggest possible integer
+console.log(Number.MAX_SAFE_INTEGER); // will also give same result
+
+console.log(2 ** 53 + 7); // Will give wrong result
+
+// To make a big int use n as suffix
+console.log(4862162619849131322649851612226265151616518432316n);
+console.log(BigInt(4862162619849131322649851612226265151616518432316));
+// Will give wrong result because the number needs  to be stored as int first and then is converted to BigInt and since it is larger than 2^53, it gives wrong results. So use BigInt() method for small numbers only.
+
+// Operations
+
+console.log(10000n + 10000n);
+console.log(26446565162154164264n * 6646616161616465456n); // 175780167426016847622872151319305664384n
+
+// console.log(100 + 10000n); // Gives error
+
+const a = 10;
+const b = 100n;
+// console.log(a * b); // gives error --> Can't mix bigint and int
+console.log(BigInt(a) * b); // 1000n
+
+console.log(typeof b); // bigint
+console.log(typeof a); // number
+
+console.log(20n > 15); // true
+console.log(20n === 20); // false --> as one on bigint and another number
+console.log(20n == 20); // true --> as bigint will be type coerced
+
+// console.log(Math.sqrt(b)); // gives type error --> Math functions do not work as they are bigint and not regular number
+
+console.log(b + ' is really big'); // 100 is really big
+
+// divisions
+
+console.log(10n / 3n); // 3n --> omits the decimal part.
+console.log(10 / 3); // 3.3333333333333335
+
+/*
 // Numberic Separator:
 
 const a = 1_42_000; // '_' is used as separator to understand 1 lakh and 42 thousand.
