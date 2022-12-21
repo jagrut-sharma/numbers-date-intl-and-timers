@@ -21,9 +21,9 @@ const account1 = {
     '2020-01-28T09:15:04.904Z',
     '2020-04-01T10:17:24.185Z',
     '2020-05-08T14:11:59.604Z',
-    '2020-05-27T17:01:17.194Z',
-    '2020-07-11T23:36:17.929Z',
-    '2020-07-12T10:51:36.790Z',
+    '2022-12-18T17:01:17.194Z',
+    '2022-12-20T23:36:17.929Z',
+    '2022-12-21T10:51:36.790Z',
   ],
   currency: 'EUR',
   locale: 'pt-PT', // de-DE
@@ -81,6 +81,23 @@ const inputClosePin = document.querySelector('.form__input--pin');
 /////////////////////////////////////////////////
 // Functions
 
+const formatMovementDate = function (date) {
+  const year = date.getFullYear();
+  const month = `${date.getMonth() + 1}`.padStart(2, 0);
+  const dateMov = `${date.getDate()}`.padStart(2, 0);
+
+  const calcDaysPassed = (date1, date2) =>
+    Math.round(Math.abs(date1 - date2) / (1000 * 60 * 60 * 24));
+
+  const daysPassed = calcDaysPassed(date, new Date());
+
+  if (daysPassed === 0) return 'Today';
+  if (daysPassed === 1) return 'Yesterday';
+  if (daysPassed <= 7) return `${daysPassed} days ago`;
+
+  return `${dateMov}/${month}/${year}`;
+};
+
 const displayMovements = function (acc, sort = false) {
   containerMovements.innerHTML = '';
 
@@ -92,10 +109,8 @@ const displayMovements = function (acc, sort = false) {
     const type = mov > 0 ? 'deposit' : 'withdrawal';
 
     const date = new Date(acc.movementsDates[i]);
-    const year = date.getFullYear();
-    const month = `${date.getMonth() + 1}`.padStart(2, 0);
-    const dateMov = `${date.getDate()}`.padStart(2, 0);
-    const displayDate = `${dateMov}/${month}/${year}`;
+
+    const displayDate = formatMovementDate(date);
 
     const html = `
       <div class="movements__row">
@@ -282,6 +297,12 @@ btnSort.addEventListener('click', function (e) {
 /////////////////////////////////////////////////
 /////////////////////////////////////////////////
 // LECTURES
+
+// Operations with dates:
+const future = new Date(2037, 10, 19, 15, 23);
+console.log(+future);
+
+// console.log(  calcDaysPassed(new Date(2037, 12, 14), new Date(2037, 12, 24, 10, 8)));
 
 /*
 // DATE AND TIME:
