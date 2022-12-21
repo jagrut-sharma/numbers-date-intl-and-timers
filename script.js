@@ -81,10 +81,10 @@ const inputClosePin = document.querySelector('.form__input--pin');
 /////////////////////////////////////////////////
 // Functions
 
-const formatMovementDate = function (date) {
-  const year = date.getFullYear();
-  const month = `${date.getMonth() + 1}`.padStart(2, 0);
-  const dateMov = `${date.getDate()}`.padStart(2, 0);
+const formatMovementDate = function (date, locale) {
+  // const year = date.getFullYear();
+  // const month = `${date.getMonth() + 1}`.padStart(2, 0);
+  // const dateMov = `${date.getDate()}`.padStart(2, 0);
 
   const calcDaysPassed = (date1, date2) =>
     Math.round(Math.abs(date1 - date2) / (1000 * 60 * 60 * 24));
@@ -95,7 +95,7 @@ const formatMovementDate = function (date) {
   if (daysPassed === 1) return 'Yesterday';
   if (daysPassed <= 7) return `${daysPassed} days ago`;
 
-  return `${dateMov}/${month}/${year}`;
+  return new Intl.DateTimeFormat(locale).format(date);
 };
 
 const displayMovements = function (acc, sort = false) {
@@ -110,7 +110,7 @@ const displayMovements = function (acc, sort = false) {
 
     const date = new Date(acc.movementsDates[i]);
 
-    const displayDate = formatMovementDate(date);
+    const displayDate = formatMovementDate(date, acc.locale);
 
     const html = `
       <div class="movements__row">
@@ -205,14 +205,27 @@ btnLogin.addEventListener('click', function (e) {
     inputLoginPin.blur();
 
     // Date
-
     const now = new Date();
-    const year = now.getFullYear();
-    const month = `${now.getMonth() + 1}`.padStart(2, 0);
-    const date = `${now.getDate()}`.padStart(2, 0);
-    const hour = `${now.getHours()}`.padStart(2, 0);
-    const min = `${now.getMinutes()}`.padStart(2, 0);
-    labelDate.textContent = `${date}/${month}/${year}, ${hour}:${min}`;
+    const options = {
+      hour: 'numeric',
+      minute: 'numeric',
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric',
+    };
+    // labelDate.textContent = new Intl.DateTimeFormat('gu-IN', options).format(now); // in gujarati
+    // labelDate.textContent = new Intl.DateTimeFormat('hi-IN', options).format(now); // in hindi
+    // const locale = navigator.language; // Takes local language from user browser.
+    labelDate.textContent = new Intl.DateTimeFormat(
+      currentAccount.locale,
+      options
+    ).format(now);
+    // const year = now.getFullYear();
+    // const month = `${now.getMonth() + 1}`.padStart(2, 0);
+    // const date = `${now.getDate()}`.padStart(2, 0);
+    // const hour = `${now.getHours()}`.padStart(2, 0);
+    // const min = `${now.getMinutes()}`.padStart(2, 0);
+    // labelDate.textContent = `${date}/${month}/${year}, ${hour}:${min}`;
 
     // Update UI
     updateUI(currentAccount);
@@ -298,6 +311,7 @@ btnSort.addEventListener('click', function (e) {
 /////////////////////////////////////////////////
 // LECTURES
 
+/*
 // Operations with dates:
 const future = new Date(2037, 10, 19, 15, 23);
 console.log(+future);
